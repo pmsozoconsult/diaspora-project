@@ -27,7 +27,23 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={onSubmit} autoComplete="off" className="relative space-y-5">
+      <input
+        type="text"
+        name="prevent_autofill"
+        tabIndex={-1}
+        autoComplete="off"
+        className="pointer-events-none absolute h-0 w-0 opacity-0"
+        aria-hidden
+      />
+      <input
+        type="password"
+        name="prevent_autofill_pw"
+        tabIndex={-1}
+        autoComplete="new-password"
+        className="pointer-events-none absolute h-0 w-0 opacity-0"
+        aria-hidden
+      />
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
           Create your account
@@ -40,20 +56,47 @@ export function RegisterForm() {
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
       )}
       <div>
-        <Label htmlFor="name">Full name</Label>
-        <Input id="name" name="name" required />
+        <Label htmlFor="register-name">Full name</Label>
+        <Input
+          id="register-name"
+          name="name"
+          required
+          autoComplete="off"
+          placeholder="Your full name"
+        />
       </div>
       <div>
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" required />
+        <Label htmlFor="register-email">Email</Label>
+        <Input
+          id="register-email"
+          name="email"
+          type="email"
+          required
+          autoComplete="off"
+          placeholder="you@email.com"
+        />
       </div>
       <div>
-        <Label htmlFor="phone">Phone (optional)</Label>
-        <Input id="phone" name="phone" type="tel" />
+        <Label htmlFor="register-phone">Phone (optional)</Label>
+        <Input
+          id="register-phone"
+          name="phone"
+          type="tel"
+          autoComplete="off"
+          placeholder="Phone number"
+        />
       </div>
       <div>
-        <Label htmlFor="password">Password (min 8 characters)</Label>
-        <Input id="password" name="password" type="password" minLength={8} required />
+        <Label htmlFor="register-password">Password (min 8 characters)</Label>
+        <Input
+          id="register-password"
+          name="password"
+          type="password"
+          minLength={8}
+          required
+          autoComplete="new-password"
+          placeholder="Choose a password"
+        />
       </div>
       <Button type="submit" disabled={loading} className="w-full" size="lg">
         {loading ? "Creating account…" : "Create account"}

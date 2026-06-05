@@ -4,8 +4,7 @@ import { Role } from "@prisma/client";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { CreateStaffForm } from "@/components/staff/create-staff-form";
-import { DataTable, DataTableRow, DataTableCell } from "@/components/ui/data-table";
-import { Badge } from "@/components/ui/badge";
+import { InternalUsersTable } from "@/components/staff/internal-users-table";
 import { UserPlus } from "lucide-react";
 
 export default async function StaffTeamPage() {
@@ -45,7 +44,7 @@ export default async function StaffTeamPage() {
             </li>
             <li>
               <strong className="text-slate-800">ADMIN</strong> — all staff access plus
-              create users
+              create and edit internal users
             </li>
           </ul>
         </Card>
@@ -53,20 +52,16 @@ export default async function StaffTeamPage() {
 
       <div className="mt-10">
         <h2 className="mb-4 text-lg font-bold text-slate-900">Internal users</h2>
-        <DataTable headers={["Name", "Email", "Role", "Created by"]}>
-          {team.map((u) => (
-            <DataTableRow key={u.id}>
-              <DataTableCell className="font-semibold">{u.name}</DataTableCell>
-              <DataTableCell>{u.email}</DataTableCell>
-              <DataTableCell>
-                <Badge tone={u.role === "ADMIN" ? "warning" : "info"}>{u.role}</Badge>
-              </DataTableCell>
-              <DataTableCell className="text-slate-500">
-                {u.createdBy?.name ?? "—"}
-              </DataTableCell>
-            </DataTableRow>
-          ))}
-        </DataTable>
+        <InternalUsersTable
+          adminId={session.user.id}
+          users={team.map((u) => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            role: u.role,
+            createdByName: u.createdBy?.name ?? null,
+          }))}
+        />
       </div>
     </div>
   );

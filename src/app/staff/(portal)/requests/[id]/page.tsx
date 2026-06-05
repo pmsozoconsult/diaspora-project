@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ServiceRequestStatus } from "@prisma/client";
+import { Role, ServiceRequestStatus } from "@prisma/client";
 import { requireStaff } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/page-header";
@@ -20,11 +20,21 @@ export default async function StaffRequestDetailPage({
     where: { id },
     include: {
       client: true,
+      assignedTo: true,
       items: { include: { service: true }, orderBy: { id: "asc" } },
     },
   });
 
   if (!request) notFound();
+
+  const staffMembers =
+    session.user.role === Role.ADMIN
+      ? await prisma.user.findMany({
+          where: { role: { in: [Role.STAFF, Role.ADMIN] } },
+          select: { id: true, name: true, email: true, role: true },
+          orderBy: { name: "asc" },
+        })
+      : [];
 
   const messages = await getRequestMessagesForThread(request.id);
 
@@ -62,6 +72,12 @@ export default async function StaffRequestDetailPage({
         staffId={session.user.id}
         clientName={request.client.name}
         clientEmail={request.client.email}
+        assignedTo={
+          request.assignedTo
+            ? { id: request.assignedTo.id, name: request.assignedTo.name }
+            : null
+        }
+        staffMembers={staffMembers}
       />
     </div>
   );

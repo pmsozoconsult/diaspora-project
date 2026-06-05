@@ -8,9 +8,11 @@ import { cn } from "@/lib/utils";
 export function SignOutButton({
   callbackUrl = "/",
   variant = "client",
+  collapsed = false,
 }: {
   callbackUrl?: string;
   variant?: "client" | "staff";
+  collapsed?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,14 +30,16 @@ export function SignOutButton({
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "flex w-full items-center justify-center gap-2 rounded-xl border-2 px-3 py-3 text-sm font-semibold transition duration-200",
+          "flex w-full items-center justify-center gap-2 rounded-xl border-2 text-sm font-semibold transition duration-200",
+          collapsed ? "px-2 py-2.5" : "px-3 py-3",
           isStaff
             ? "border-red-900/40 bg-red-950/50 text-red-200 hover:border-red-400 hover:bg-red-900/80 hover:text-white"
             : "border-red-200 bg-red-50 text-red-700 hover:border-red-400 hover:bg-red-100 hover:text-red-800"
         )}
+        title={collapsed ? "Sign out" : undefined}
       >
         <LogOut className="h-5 w-5 shrink-0" strokeWidth={2.25} />
-        Sign out
+        {!collapsed && "Sign out"}
       </button>
 
       {open && (

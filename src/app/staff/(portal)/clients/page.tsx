@@ -20,7 +20,7 @@ export default async function StaffClientsPage() {
     <div className="page-content">
       <PageHeader
         title="Clients"
-        description="All registered diaspora clients and their POA status."
+        description="Open a client to view POA progress and service history."
         breadcrumbs={[{ label: "Staff", href: "/staff" }, { label: "Clients" }]}
       />
 
@@ -39,14 +39,12 @@ export default async function StaffClientsPage() {
             </DataTableCell>
             <DataTableCell>{c._count.serviceRequests}</DataTableCell>
             <DataTableCell className="text-right">
-              {c.poaCase && (
-                <Link
-                  href={`/staff/poa/${c.poaCase.id}`}
-                  className="text-sm font-semibold text-brand-700 hover:underline"
-                >
-                  POA →
-                </Link>
-              )}
+              <Link
+                href={`/staff/clients/${c.id}`}
+                className="text-sm font-semibold text-brand-700 hover:underline"
+              >
+                Open client →
+              </Link>
             </DataTableCell>
           </DataTableRow>
         ))}

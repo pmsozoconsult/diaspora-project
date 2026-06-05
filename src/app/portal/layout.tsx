@@ -1,6 +1,5 @@
 import { requireClient } from "@/lib/session";
-import { PortalSidebarWrapper } from "@/components/layout/portal-sidebar-wrapper";
-import { Suspense } from "react";
+import { PortalPortalShell } from "@/components/layout/portal-portal-shell";
 
 export default async function PortalLayout({
   children,
@@ -11,12 +10,7 @@ export default async function PortalLayout({
 
   return (
     <div className="min-h-screen bg-mesh-portal">
-      <Suspense>
-        <PortalSidebarWrapper userName={session.user.name} />
-      </Suspense>
-      <div className="pl-[var(--sidebar-width)]">
-        <main className="page-container min-h-screen py-8 lg:py-10">{children}</main>
-      </div>
+      <PortalPortalShell userName={session.user.name}>{children}</PortalPortalShell>
     </div>
   );
 }

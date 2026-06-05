@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ServiceRequestStatus, Role } from "@prisma/client";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RequestItemProgress } from "@/components/requests/request-item-progress";
 import { RequestItemStatusPanel } from "@/components/staff/request-item-status-panel";
+import { RequestAssignmentPanel } from "@/components/staff/request-assignment-panel";
 import { RequestChat } from "@/components/chat/request-chat";
 import { getServiceVisual } from "@/lib/service-catalog";
 import {
@@ -33,6 +34,32 @@ type MessageView = {
   author: { name: string; role: string };
 };
 
+type StaffOption = {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+};
+
+type ItemGroupTab = "in_progress" | "completed";
+
+function splitItemsByProgress(items: RequestItemView[]) {
+  const inProgress = items.filter(
+    (item) => item.status !== ServiceRequestStatus.COMPLETED
+  );
+  const completed = items.filter(
+    (item) => item.status === ServiceRequestStatus.COMPLETED
+  );
+  return { inProgress, completed };
+}
+
+function getDefaultSelectedId(items: RequestItemView[]) {
+  const inProgress = items.filter(
+    (item) => item.status !== ServiceRequestStatus.COMPLETED
+  );
+  return inProgress[0]?.id ?? items[0]?.id ?? "";
+}
+
 export function RequestDetailWorkspace({
   requestId,
   referenceNo,
@@ -45,6 +72,8 @@ export function RequestDetailWorkspace({
   staffId,
   clientName,
   clientEmail,
+  assignedTo = null,
+  staffMembers = [],
 }: {
   requestId: string;
   referenceNo: string;
@@ -57,17 +86,45 @@ export function RequestDetailWorkspace({
   staffId?: string;
   clientName?: string;
   clientEmail?: string;
+  assignedTo?: { id: string; name: string } | null;
+  staffMembers?: StaffOption[];
 }) {
-  const [selectedId, setSelectedId] = useState(items[0]?.id ?? "");
-  const selected = useMemo(
-    () => items.find((i) => i.id === selectedId) ?? items[0],
-    [items, selectedId]
+  const [itemGroupTab, setItemGroupTab] = useState<ItemGroupTab>("in_progress");
+  const [selectedId, setSelectedId] = useState(() => getDefaultSelectedId(items));
+
+  const { inProgress, completed } = useMemo(
+    () => splitItemsByProgress(items),
+    [items]
   );
+
+  const visibleItems = itemGroupTab === "completed" ? completed : inProgress;
+
+  const selected = useMemo(
+    () => visibleItems.find((i) => i.id === selectedId) ?? visibleItems[0],
+    [visibleItems, selectedId]
+  );
+
+  function handleGroupTabChange(tab: ItemGroupTab) {
+    setItemGroupTab(tab);
+    const nextItems = tab === "completed" ? completed : inProgress;
+    if (nextItems[0]) {
+      setSelectedId(nextItems[0].id);
+    }
+  }
+
+  useEffect(() => {
+    if (!visibleItems.some((item) => item.id === selectedId) && visibleItems[0]) {
+      setSelectedId(visibleItems[0].id);
+    }
+  }, [itemGroupTab, visibleItems, selectedId]);
 
   const progress = countItemProgress(items);
   const overallTone = requestStatusTone(requestStatus);
-
-  if (!selected) return null;
+  const showItemGroupTabs = isStaff && items.length > 0;
+  const showServicePicker = isStaff
+    ? visibleItems.length > 0
+    : items.length > 1;
+  const servicePickerItems = isStaff ? visibleItems : items;
 
   return (
     <div className="space-y-8">
@@ -120,56 +177,127 @@ export function RequestDetailWorkspace({
         )}
       </div>
 
-      {items.length > 1 && (
+      {isStaff && staffId && (
+        <RequestAssignmentPanel
+          requestId={requestId}
+          currentUserId={staffId}
+          currentUserRole={userRole}
+          assignedTo={assignedTo}
+          staffMembers={staffMembers}
+        />
+      )}
+
+      {showItemGroupTabs && (
         <div
-          className="flex w-full gap-2"
+          className="flex w-full flex-wrap gap-2 border-b border-slate-200 pb-1"
           role="tablist"
-          aria-label="Services in this request"
+          aria-label="Service progress groups"
         >
-          {items.map((item) => {
-            const visual = getServiceVisual(item.serviceName);
-            const Icon = visual.icon;
-            const isActive = item.id === selected.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setSelectedId(item.id)}
+          {(
+            [
+              { key: "in_progress" as const, label: "In progress", count: inProgress.length },
+              { key: "completed" as const, label: "Completed", count: completed.length },
+            ] as const
+          ).map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={itemGroupTab === tab.key}
+              onClick={() => handleGroupTabChange(tab.key)}
+              className={cn(
+                "rounded-t-lg px-4 py-2.5 text-sm font-semibold transition",
+                itemGroupTab === tab.key
+                  ? "border-b-2 border-brand-600 text-brand-700"
+                  : "text-slate-500 hover:text-slate-800"
+              )}
+            >
+              {tab.label}
+              <span
                 className={cn(
-                  "flex min-w-0 flex-1 basis-0 items-center gap-3 rounded-xl border-2 px-3 py-3 text-left transition sm:px-4",
-                  isActive
-                    ? "border-brand-600 bg-white shadow-md ring-2 ring-brand-200"
-                    : "border-slate-200 bg-white hover:border-brand-300"
+                  "ml-2 rounded-full px-2 py-0.5 text-xs",
+                  itemGroupTab === tab.key
+                    ? "bg-brand-100 text-brand-800"
+                    : "bg-slate-100 text-slate-600"
                 )}
               >
-                <span
-                  className={cn(
-                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-white",
-                    visual.accent
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-slate-900">
-                    {item.serviceName}
-                  </span>
-                  <span className="text-xs text-slate-500">
-                    {ITEM_STATUS_SHORT[item.status ?? ServiceRequestStatus.IN_PROGRESS]}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
+                {tab.count}
+              </span>
+            </button>
+          ))}
         </div>
       )}
 
-      <RequestItemProgress
-        status={selected.status ?? ServiceRequestStatus.IN_PROGRESS}
-        serviceName={selected.serviceName}
-      />
+      {showItemGroupTabs && visibleItems.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-6 py-10 text-center">
+          <p className="text-sm font-medium text-slate-700">
+            {itemGroupTab === "completed"
+              ? "No completed services in this request yet."
+              : "No services in progress — open the Completed tab to review finished services."}
+          </p>
+        </div>
+      ) : (
+        <>
+          {showServicePicker && (
+            <div
+              className={cn(
+                "flex w-full gap-2",
+                servicePickerItems.length === 1 ? "max-w-md" : "flex-wrap"
+              )}
+              role="tablist"
+              aria-label="Services in this request"
+            >
+              {servicePickerItems.map((item) => {
+                const visual = getServiceVisual(item.serviceName);
+                const Icon = visual.icon;
+                const isActive = item.id === selected?.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setSelectedId(item.id)}
+                    className={cn(
+                      "flex min-w-0 items-center gap-3 rounded-xl border-2 px-3 py-3 text-left transition sm:px-4",
+                      servicePickerItems.length === 1
+                        ? "w-full"
+                        : "min-w-[12rem] flex-1 basis-0",
+                      isActive
+                        ? "border-brand-600 bg-white shadow-md ring-2 ring-brand-200"
+                        : "border-slate-200 bg-white hover:border-brand-300"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-white",
+                        visual.accent
+                      )}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-slate-900">
+                        {item.serviceName}
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        {ITEM_STATUS_SHORT[item.status ?? ServiceRequestStatus.IN_PROGRESS]}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {selected && (
+            <RequestItemProgress
+              status={selected.status ?? ServiceRequestStatus.IN_PROGRESS}
+              serviceName={selected.serviceName}
+            />
+          )}
+        </>
+      )}
 
       <div className="grid gap-8 xl:grid-cols-[minmax(280px,360px)_1fr]">
         <div className="space-y-6">
@@ -185,35 +313,43 @@ export function RequestDetailWorkspace({
             </Card>
           )}
 
-          <Card variant="elevated">
-            <CardTitle icon={<Package className="h-5 w-5 text-brand-600" />}>
-              {items.length > 1 ? "Selected service" : "Services"}
-            </CardTitle>
-            <div className="mt-4 space-y-3">
-              <div className="flex justify-between border-b border-slate-100 pb-3">
-                <span className="text-sm font-medium text-slate-800">
-                  {selected.serviceName}
-                </span>
-                <span className="text-sm font-bold">{formatMoney(selected.priceCents)}</span>
+          {selected && (
+            <Card variant="elevated">
+              <CardTitle icon={<Package className="h-5 w-5 text-brand-600" />}>
+                {items.length > 1 ? "Selected service" : "Services"}
+              </CardTitle>
+              <div className="mt-4 space-y-3">
+                <div className="flex justify-between border-b border-slate-100 pb-3">
+                  <span className="text-sm font-medium text-slate-800">
+                    {selected.serviceName}
+                  </span>
+                  <span className="text-sm font-bold">
+                    {formatMoney(selected.priceCents)}
+                  </span>
+                </div>
+                {items.length > 1 && (
+                  <ul className="space-y-2 text-xs text-slate-500">
+                    {servicePickerItems.map((i) => (
+                      <li key={i.id} className="flex justify-between gap-2">
+                        <span
+                          className={cn(
+                            i.id === selected.id && "font-semibold text-slate-700"
+                          )}
+                        >
+                          {i.serviceName}
+                        </span>
+                        <span>
+                          {ITEM_STATUS_SHORT[i.status ?? ServiceRequestStatus.IN_PROGRESS]}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
-              {items.length > 1 && (
-                <ul className="space-y-2 text-xs text-slate-500">
-                  {items.map((i) => (
-                    <li key={i.id} className="flex justify-between gap-2">
-                      <span className={cn(i.id === selected.id && "font-semibold text-slate-700")}>
-                        {i.serviceName}
-                      </span>
-                      <span>
-                        {ITEM_STATUS_SHORT[i.status ?? ServiceRequestStatus.IN_PROGRESS]}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </Card>
+            </Card>
+          )}
 
-          {isStaff && staffId && (
+          {isStaff && staffId && selected && (
             <Card variant="accent">
               <CardTitle icon={<ListChecks className="h-5 w-5 text-brand-600" />}>
                 Update service status

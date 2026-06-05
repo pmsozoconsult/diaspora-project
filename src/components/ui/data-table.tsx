@@ -2,10 +2,13 @@ import { cn } from "@/lib/utils";
 
 export function DataTable({
   headers,
+  columnWidths,
   children,
   emptyMessage,
 }: {
   headers: string[];
+  /** Percentage or fixed widths — enables `table-fixed` for even column distribution */
+  columnWidths?: string[];
   children: React.ReactNode;
   emptyMessage?: string;
 }) {
@@ -25,15 +28,30 @@ export function DataTable({
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px] text-left text-sm">
+        <table
+          className={cn(
+            "w-full min-w-[960px] text-left text-sm",
+            columnWidths?.length ? "table-fixed" : ""
+          )}
+        >
+          {columnWidths?.length ? (
+            <colgroup>
+              {columnWidths.map((width, index) => (
+                <col key={`${width}-${index}`} style={{ width }} />
+              ))}
+            </colgroup>
+          ) : null}
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/80">
-              {headers.map((h) => (
+              {headers.map((h, index) => (
                 <th
-                  key={h}
-                  className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500"
+                  key={`${h}-${index}`}
+                  className={cn(
+                    "px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500",
+                    index === headers.length - 1 && h === "" ? "text-right" : ""
+                  )}
                 >
-                  {h}
+                  {h || "\u00a0"}
                 </th>
               ))}
             </tr>

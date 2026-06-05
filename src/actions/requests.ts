@@ -155,6 +155,114 @@ export async function updateRequestItemStatus(
   };
 }
 
+async function assertStaffUser(userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || (user.role !== Role.STAFF && user.role !== Role.ADMIN)) {
+    return null;
+  }
+  return user;
+}
+
+export async function assignRequestToStaff(
+  adminId: string,
+  requestId: string,
+  staffUserId: string
+) {
+  const admin = await prisma.user.findUnique({ where: { id: adminId } });
+  if (!admin || admin.role !== Role.ADMIN) {
+    return { error: "Only administrators can assign requests." };
+  }
+
+  const request = await prisma.serviceRequest.findUnique({
+    where: { id: requestId },
+  });
+  if (!request) return { error: "Request not found." };
+  if (request.status === ServiceRequestStatus.DRAFT) {
+    return { error: "This request has not been submitted yet." };
+  }
+
+  const staff = await assertStaffUser(staffUserId);
+  if (!staff) return { error: "Select a valid staff member." };
+
+  await prisma.serviceRequest.update({
+    where: { id: requestId },
+    data: { assignedToId: staffUserId },
+  });
+
+  revalidatePath(`/staff/requests/${requestId}`);
+  revalidatePath("/staff/requests");
+
+  return {
+    success: true,
+    assigneeName: staff.name,
+    assigneeId: staff.id,
+  };
+}
+
+export async function pickUpRequest(staffId: string, requestId: string) {
+  const staff = await assertStaffUser(staffId);
+  if (!staff) return { error: "Unauthorized" };
+
+  const request = await prisma.serviceRequest.findUnique({
+    where: { id: requestId },
+    include: { assignedTo: true },
+  });
+  if (!request) return { error: "Request not found." };
+  if (request.status === ServiceRequestStatus.DRAFT) {
+    return { error: "This request has not been submitted yet." };
+  }
+
+  if (request.assignedToId && request.assignedToId !== staffId) {
+    return {
+      error: `This request is already assigned to ${request.assignedTo?.name ?? "another team member"}.`,
+    };
+  }
+
+  if (request.assignedToId === staffId) {
+    return { success: true, assigneeName: staff.name, assigneeId: staff.id };
+  }
+
+  await prisma.serviceRequest.update({
+    where: { id: requestId },
+    data: { assignedToId: staffId },
+  });
+
+  revalidatePath(`/staff/requests/${requestId}`);
+  revalidatePath("/staff/requests");
+
+  return {
+    success: true,
+    assigneeName: staff.name,
+    assigneeId: staff.id,
+  };
+}
+
+export async function dropRequestTask(staffId: string, requestId: string) {
+  const staff = await assertStaffUser(staffId);
+  if (!staff) return { error: "Unauthorized" };
+
+  const request = await prisma.serviceRequest.findUnique({
+    where: { id: requestId },
+  });
+  if (!request) return { error: "Request not found." };
+  if (request.status === ServiceRequestStatus.DRAFT) {
+    return { error: "This request has not been submitted yet." };
+  }
+  if (request.assignedToId !== staffId) {
+    return { error: "You can only drop requests assigned to you." };
+  }
+
+  await prisma.serviceRequest.update({
+    where: { id: requestId },
+    data: { assignedToId: null },
+  });
+
+  revalidatePath(`/staff/requests/${requestId}`);
+  revalidatePath("/staff/requests");
+
+  return { success: true };
+}
+
 export async function postRequestMessage(
   authorId: string,
   requestId: string,

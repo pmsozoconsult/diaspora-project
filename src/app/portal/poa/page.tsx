@@ -68,8 +68,8 @@ export default async function PortalPoaPage() {
                   <div>
                     <CardTitle>POA engagement fee</CardTitle>
                     <CardDescription className="max-w-md">
-                      Payment confirms your agreement to proceed. Instructions and
-                      POA chat unlock immediately after.
+                      Review and accept the terms & conditions, then pay to unlock
+                      instructions and POA chat.
                     </CardDescription>
                     <p className="mt-2 text-xl font-bold text-slate-900">
                       {formatMoney(feeCents)}

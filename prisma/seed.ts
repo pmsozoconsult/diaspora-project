@@ -25,20 +25,23 @@ Our team will update your status when your POA is registered. You can message us
     {
       name: "Property title verification",
       description: "Verify land or property title documents in Ethiopia.",
+      category: "Property & assets",
       priceCents: 15000,
       sortOrder: 1,
     },
     {
       name: "Bank account facilitation",
       description: "Support opening or managing diaspora banking requirements.",
+      category: "Banking",
       priceCents: 20000,
-      sortOrder: 2,
+      sortOrder: 1,
     },
     {
       name: "Business registration support",
       description: "Company registration and licensing coordination.",
+      category: "Legal & business",
       priceCents: 35000,
-      sortOrder: 3,
+      sortOrder: 1,
     },
   ];
 
@@ -46,6 +49,16 @@ Our team will update your status when your POA is registered. You can message us
     const existing = await prisma.service.findFirst({ where: { name: s.name } });
     if (!existing) {
       await prisma.service.create({ data: s });
+    } else {
+      await prisma.service.update({
+        where: { id: existing.id },
+        data: {
+          category: s.category,
+          description: s.description,
+          priceCents: s.priceCents,
+          sortOrder: s.sortOrder,
+        },
+      });
     }
   }
 

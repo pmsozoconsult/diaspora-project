@@ -152,205 +152,88 @@
 
   .page-loader-panel {
     background: linear-gradient(165deg, #fffef0 0%, #fff9e6 45%, #f0faf4 100%);
-    border: 2px solid #078930;
+    border: none;
+    isolation: isolate;
   }
 
-  .page-loader-flag-stripe {
+  .page-loader-panel::before {
+    content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    padding: 3px;
     background: linear-gradient(
       90deg,
       #078930 0%,
-      #078930 33.33%,
+      #078930 16.66%,
+      #fcdd09 16.66%,
       #fcdd09 33.33%,
+      #da121a 33.33%,
+      #da121a 50%,
+      #078930 50%,
+      #078930 66.66%,
       #fcdd09 66.66%,
-      #da121a 66.66%,
+      #fcdd09 83.33%,
+      #da121a 83.33%,
       #da121a 100%
     );
+    background-size: 200% 100%;
+    animation: page-loader-border-flow 2.5s linear infinite;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
   }
 
-  .page-loader-hand {
-    width: 112px;
-    height: 70px;
+  .page-loader-panel > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .page-loader-pencil-wrap {
     margin-top: 0.5rem;
+    width: 140px;
+    height: 88px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: visible;
   }
 
-  .page-loader-hand::after {
-    content: "";
-    display: table;
-    clear: both;
-  }
-
-  .page-loader-hand .finger {
-    float: left;
-    width: 20px;
-    height: 100%;
-    margin: 0 2px 0 0;
-  }
-
-  .page-loader-hand .finger-1 {
-    animation: page-loader-finger-1 2s infinite ease-out;
-  }
-
-  .page-loader-hand .finger-1 .finger-item span {
-    animation: page-loader-finger-1-span 2s infinite ease-out;
-  }
-
-  .page-loader-hand .finger-1 .finger-item i {
-    animation: page-loader-finger-1-i 2s infinite ease-out;
-  }
-
-  .page-loader-hand .finger-2 {
-    animation: page-loader-finger-2 2s infinite ease-out;
-  }
-
-  .page-loader-hand .finger-2 .finger-item span {
-    animation: page-loader-finger-2-span 2s infinite ease-out;
-  }
-
-  .page-loader-hand .finger-2 .finger-item i {
-    animation: page-loader-finger-2-i 2s infinite ease-out;
-  }
-
-  .page-loader-hand .finger-3 {
-    animation: page-loader-finger-3 2s infinite ease-out;
-  }
-
-  .page-loader-hand .finger-3 .finger-item span {
-    animation: page-loader-finger-3-span 2s infinite ease-out;
-  }
-
-  .page-loader-hand .finger-3 .finger-item i {
-    animation: page-loader-finger-3-i 2s infinite ease-out;
-  }
-
-  .page-loader-hand .finger-4 {
-    animation: page-loader-finger-4 2s infinite ease-out;
-  }
-
-  .page-loader-hand .finger-4 .finger-item span {
-    animation: page-loader-finger-4-span 2s infinite ease-out;
-  }
-
-  .page-loader-hand .finger-4 .finger-item i {
-    animation: page-loader-finger-4-i 2s infinite ease-out;
-  }
-
-  .page-loader-hand .finger-item {
+  .page-loader-pencil {
     position: relative;
-    width: 100%;
-    height: 100%;
-    border-radius: 6px 6px 8px 8px;
-    background: #fffef5;
-    border: 1.5px solid #000;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    height: 200px;
+    width: 200px;
+    border-bottom: 3px solid #078930;
+    box-sizing: border-box;
+    animation: page-loader-draw-line 4s linear infinite;
+    transform: scale(0.65);
+    transform-origin: center bottom;
   }
 
-  .page-loader-hand .finger-item span {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 5px 5px 0;
-  }
-
-  .page-loader-hand .finger-item span::before,
-  .page-loader-hand .finger-item span::after {
-    content: "";
-    position: relative;
-    display: block;
-    margin: 0 0 2px;
-    width: 100%;
-    height: 2px;
-  }
-
-  .page-loader-hand .finger-1 .finger-item span::before,
-  .page-loader-hand .finger-1 .finger-item span::after {
-    background: #078930;
-  }
-
-  .page-loader-hand .finger-1 .finger-item i {
-    background: #078930;
-  }
-
-  .page-loader-hand .finger-2 .finger-item span::before,
-  .page-loader-hand .finger-2 .finger-item span::after {
-    background: #078930;
-  }
-
-  .page-loader-hand .finger-2 .finger-item i {
-    background: #078930;
-  }
-
-  .page-loader-hand .finger-3 .finger-item span::before,
-  .page-loader-hand .finger-3 .finger-item span::after {
-    background: #078930;
-  }
-
-  .page-loader-hand .finger-3 .finger-item i {
-    background: #078930;
-  }
-
-  .page-loader-hand .finger-4 .finger-item span::before,
-  .page-loader-hand .finger-4 .finger-item span::after {
-    background: #078930;
-  }
-
-  .page-loader-hand .finger-4 .finger-item i {
-    background: #078930;
-  }
-
-  .page-loader-hand .finger-item i {
-    position: absolute;
-    left: 3px;
-    bottom: 3px;
-    width: 14px;
-    height: 14px;
-    border-radius: 10px 10px 7px 7px;
-  }
-
-  .page-loader-hand .last-finger {
-    position: relative;
-    float: left;
-    width: 24px;
-    height: 100%;
-    overflow: hidden;
-  }
-
-  .page-loader-hand .last-finger-item {
-    position: absolute;
-    right: 0;
-    top: 32px;
-    width: 110%;
-    height: 20px;
-    border-radius: 0 5px 14px 0;
-    background: #fffef5;
-    border: 1.5px solid #000;
-    animation: page-loader-finger-5 2s infinite linear;
-  }
-
-  .page-loader-hand .last-finger-item i {
-    position: absolute;
-    left: 0;
-    top: -8px;
-    width: 22px;
-    height: 8px;
-    background: #fffef5;
-    overflow: hidden;
-  }
-
-  .page-loader-hand .last-finger-item i::after {
+  .page-loader-pencil::before {
     content: "";
     position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 34px;
-    height: 20px;
-    border-radius: 0 0 15px 15px;
-    background: #078930;
+    left: calc(100% + 14px);
+    bottom: -6px;
+    width: 16px;
+    height: 100px;
+    border-radius: 20px 20px 50px 50px;
+    background-repeat: no-repeat;
+    background-image: linear-gradient(#078930 6px, transparent 0),
+      linear-gradient(45deg, rgba(0, 0, 0, 0.02) 49%, #000 51%),
+      linear-gradient(315deg, rgba(0, 0, 0, 0.02) 49%, #000 51%),
+      linear-gradient(to bottom, #000 10%, #078930 10%, #078930 90%, #000 90%);
+    background-size: 3px 3px, 8px 8px, 8px 8px, 16px 88px;
+    background-position: center bottom, left 88px, right 88px, left top;
+    transform: rotate(25deg);
+    animation: page-loader-pencil-rot 4s linear infinite;
   }
 
   .page-loader-text {
@@ -392,194 +275,38 @@
   }
 }
 
-@keyframes page-loader-finger-1 {
-  0%,
-  20%,
-  41%,
-  100% {
-    padding: 12px 0 5px;
+@keyframes page-loader-border-flow {
+  0% {
+    background-position: 0% 0%;
   }
-  29%,
-  35% {
-    padding: 4px 0 24px;
+  100% {
+    background-position: 200% 0%;
   }
 }
 
-@keyframes page-loader-finger-1-span {
+@keyframes page-loader-draw-line {
   0%,
-  20%,
-  41%,
   100% {
-    top: 0;
+    width: 0;
   }
-  29%,
-  35% {
-    top: -7px;
-  }
-}
-
-@keyframes page-loader-finger-1-i {
-  0%,
-  20%,
-  41%,
-  100% {
-    bottom: 3px;
-    height: 14px;
-    border-radius: 10px 10px 7px 7px;
-  }
-  29%,
-  35% {
-    bottom: 8px;
-    height: 12px;
-    border-radius: 7px 7px 4px 4px;
-  }
-}
-
-@keyframes page-loader-finger-2 {
-  0%,
-  24%,
   45%,
-  100% {
-    padding: 6px 0 2px;
-  }
-  33%,
-  39% {
-    padding: 2px 0 16px;
+  55% {
+    width: 200px;
   }
 }
 
-@keyframes page-loader-finger-2-span {
+@keyframes page-loader-pencil-rot {
   0%,
-  24%,
-  45%,
+  45% {
+    bottom: -6px;
+    left: calc(100% + 14px);
+    transform: rotate(25deg);
+  }
+  55%,
   100% {
-    top: 0;
-  }
-  33%,
-  39% {
-    top: -7px;
-  }
-}
-
-@keyframes page-loader-finger-2-i {
-  0%,
-  24%,
-  45%,
-  100% {
-    bottom: 3px;
-    height: 14px;
-    border-radius: 10px 10px 7px 7px;
-  }
-  33%,
-  39% {
-    bottom: 8px;
-    height: 12px;
-    border-radius: 7px 7px 4px 4px;
-  }
-}
-
-@keyframes page-loader-finger-3 {
-  0%,
-  28%,
-  49%,
-  100% {
-    padding: 0;
-  }
-  37%,
-  43% {
-    padding: 0 0 12px;
-  }
-}
-
-@keyframes page-loader-finger-3-span {
-  0%,
-  28%,
-  49%,
-  100% {
-    top: 0;
-  }
-  37%,
-  43% {
-    top: -7px;
-  }
-}
-
-@keyframes page-loader-finger-3-i {
-  0%,
-  28%,
-  49%,
-  100% {
-    bottom: 3px;
-    height: 14px;
-    border-radius: 10px 10px 7px 7px;
-  }
-  37%,
-  43% {
-    bottom: 8px;
-    height: 12px;
-    border-radius: 7px 7px 4px 4px;
-  }
-}
-
-@keyframes page-loader-finger-4 {
-  0%,
-  32%,
-  53%,
-  100% {
-    padding: 8px 0 3px;
-  }
-  41%,
-  47% {
-    padding: 4px 0 20px;
-  }
-}
-
-@keyframes page-loader-finger-4-span {
-  0%,
-  32%,
-  53%,
-  100% {
-    top: 0;
-  }
-  41%,
-  47% {
-    top: -7px;
-  }
-}
-
-@keyframes page-loader-finger-4-i {
-  0%,
-  32%,
-  53%,
-  100% {
-    bottom: 3px;
-    height: 14px;
-    border-radius: 10px 10px 7px 7px;
-  }
-  41%,
-  47% {
-    bottom: 8px;
-    height: 12px;
-    border-radius: 7px 7px 4px 4px;
-  }
-}
-
-@keyframes page-loader-finger-5 {
-  0%,
-  34%,
-  60%,
-  100% {
-    top: 32px;
-    right: 0;
-    border-radius: 0 5px 14px 0;
-    transform: rotate(0deg);
-  }
-  43%,
-  50% {
-    top: 20px;
-    right: 2px;
-    border-radius: 0 8px 20px 0;
-    transform: rotate(-12deg);
+    bottom: -12px;
+    left: calc(100% + 16px);
+    transform: rotate(220deg);
   }
 }
 

@@ -109,9 +109,11 @@ model PoaCase {
   instructions    String?   @db.Text
   scanFileName    String?
   scanFilePath    String?
-  scanUploadedAt  DateTime?
-  notes           String?   @db.Text
-  createdAt       DateTime  @default(now())
+  scanUploadedAt        DateTime?
+  termsAcceptedAt       DateTime?
+  termsAcceptedVersion  String?
+  notes                 String?   @db.Text
+  createdAt             DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   messages        PoaMessage[]
 }
@@ -132,6 +134,7 @@ model Service {
   id          String   @id @default(cuid())
   name        String
   description String?  @db.Text
+  category    String   @default("Other")
   priceCents  Int
   active      Boolean  @default(true)
   sortOrder   Int      @default(0)

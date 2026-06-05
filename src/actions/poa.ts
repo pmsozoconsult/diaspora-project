@@ -11,13 +11,26 @@ import {
   isMockPaymentsEnabled,
 } from "@/lib/payments";
 import { getPoaFeeCents } from "@/lib/poa";
+import { POA_TERMS_VERSION } from "@/lib/poa-terms";
 import { canStaffSetPoaStatus } from "@/lib/requests";
 
-export async function initiatePoaPayment(userId: string) {
+export async function initiatePoaPayment(userId: string, termsAccepted: boolean) {
+  if (!termsAccepted) {
+    return { error: "You must accept the terms and conditions to proceed." };
+  }
+
   const poa = await prisma.poaCase.findUnique({ where: { userId } });
   if (!poa || poa.status !== PoaStatus.NOT_STARTED) {
     return { error: "POA fee already paid or not applicable." };
   }
+
+  await prisma.poaCase.update({
+    where: { userId },
+    data: {
+      termsAcceptedAt: new Date(),
+      termsAcceptedVersion: POA_TERMS_VERSION,
+    },
+  });
 
   const amountCents = await getPoaFeeCents();
   const payment = await createPoaFeePayment(userId, amountCents);

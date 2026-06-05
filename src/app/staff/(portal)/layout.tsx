@@ -1,6 +1,5 @@
 import { requireStaff } from "@/lib/session";
-import { StaffSidebarWrapper } from "@/components/layout/staff-sidebar-wrapper";
-import { Suspense } from "react";
+import { StaffPortalShell } from "@/components/layout/staff-portal-shell";
 
 export default async function StaffPortalLayout({
   children,
@@ -11,15 +10,9 @@ export default async function StaffPortalLayout({
 
   return (
     <div className="min-h-screen bg-slate-100">
-      <Suspense>
-        <StaffSidebarWrapper
-          userName={session.user.name}
-          role={session.user.role}
-        />
-      </Suspense>
-      <div className="pl-[var(--sidebar-width)]">
-        <main className="page-container min-h-screen py-8 lg:py-10">{children}</main>
-      </div>
+      <StaffPortalShell userName={session.user.name} role={session.user.role}>
+        {children}
+      </StaffPortalShell>
     </div>
   );
 }
