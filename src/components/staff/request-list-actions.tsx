@@ -287,7 +287,7 @@ export function RequestListActions({
                       <option key={member.id} value={member.id}>
                         {member.name}
                         {member.id === currentUserId ? " (you)" : ""}
-                        {member.role === Role.ADMIN ? " — Admin" : " — Staff"}
+                        {isAdminRole(member.role) ? " — Admin" : " — Staff"}
                       </option>
                     ))}
                   </select>

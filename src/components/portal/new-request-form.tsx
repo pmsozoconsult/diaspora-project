@@ -17,6 +17,7 @@ type Service = {
   name: string;
   description: string | null;
   category?: string | null;
+  sortOrder: number;
   priceCents: number;
 };
 

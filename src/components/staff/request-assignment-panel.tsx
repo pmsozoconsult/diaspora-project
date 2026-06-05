@@ -134,7 +134,7 @@ export function RequestAssignmentPanel({
                   <option key={member.id} value={member.id}>
                     {member.name}
                     {member.id === currentUserId ? " (you)" : ""}
-                    {member.role === Role.ADMIN || member.role === "ADMIN"
+                    {isAdminRole(member.role)
                       ? " — Admin"
                       : member.role
                         ? " — Staff"
