@@ -1,0 +1,19 @@
+[Unit]
+Description=Sozo Diaspora dev server (127.0.0.1:3000 for SSH tunnel)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/docker/diaspora-project
+EnvironmentFile=/root/docker/diaspora-project/.env
+Environment=NODE_ENV=development
+ExecStartPre=/usr/bin/docker compose -f /root/docker/diaspora-project/docker-compose.yml up -d
+# Fresh .next avoids broken CSS/auth after `npm run build` while dev was running
+ExecStartPre=/bin/rm -rf /root/docker/diaspora-project/.next
+ExecStart=/usr/bin/npm run dev:tunnel
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

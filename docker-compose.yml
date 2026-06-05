@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: diaspora
+      POSTGRES_PASSWORD: diaspora
+      POSTGRES_DB: diaspora
+    ports:
+      - "5433:5432"
+    volumes:
+      - diaspora_pg:/var/lib/postgresql/data
+
+volumes:
+  diaspora_pg:

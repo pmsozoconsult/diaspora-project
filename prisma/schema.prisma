@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  STAFF
+  ADMIN
+}
+
+enum PoaStatus {
+  NOT_STARTED
+  POA_FEE_PAID
+  MOFA_SUBMITTED
+  REGISTERED_IN_ETHIOPIA
+  POA_COMPLETED
+  CANCELLED
+}
+
+enum ServiceRequestStatus {
+  DRAFT
+  SUBMITTED
+  IN_PROGRESS
+  WITH_THIRD_PARTY
+  COMPLETED
+  CANCELLED
+  REJECTED
+}
+
+enum PaymentPurpose {
+  POA_FEE
+  SERVICE_REQUEST
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String
+  phone         String?
+  role          Role      @default(CLIENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdById   String?
+  createdBy     User?     @relation("StaffCreatedBy", fields: [createdById], references: [id])
+  createdStaff  User[]    @relation("StaffCreatedBy")
+
+  poaCase           PoaCase?
+  serviceRequests   ServiceRequest[] @relation("ClientRequests")
+  assignedRequests  ServiceRequest[] @relation("AssignedStaff")
+  payments          Payment[]
+  messages          RequestMessage[]
+  poaMessages       PoaMessage[]
+  accounts          Account[]
+  sessions          Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PoaCase {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          PoaStatus @default(NOT_STARTED)
+  instructions    String?   @db.Text
+  scanFileName    String?
+  scanFilePath    String?
+  scanUploadedAt  DateTime?
+  notes           String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  messages        PoaMessage[]
+}
+
+model PoaMessage {
+  id         String   @id @default(cuid())
+  poaCaseId  String
+  poaCase    PoaCase  @relation(fields: [poaCaseId], references: [id], onDelete: Cascade)
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
+  body       String?  @db.Text
+  fileName   String?
+  filePath   String?
+  createdAt  DateTime @default(now())
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  priceCents  Int
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  requestItems ServiceRequestItem[]
+}
+
+model ServiceRequest {
+  id              String               @id @default(cuid())
+  referenceNo     String               @unique
+  clientId        String
+  client          User                 @relation("ClientRequests", fields: [clientId], references: [id])
+  assignedToId    String?
+  assignedTo      User?                @relation("AssignedStaff", fields: [assignedToId], references: [id])
+  status          ServiceRequestStatus @default(DRAFT)
+  totalCents      Int                  @default(0)
+  paymentId       String?              @unique
+  payment         Payment?             @relation(fields: [paymentId], references: [id])
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  items    ServiceRequestItem[]
+  messages RequestMessage[]
+}
+
+model ServiceRequestItem {
+  id         String               @id @default(cuid())
+  requestId  String
+  request    ServiceRequest       @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  serviceId  String
+  service    Service              @relation(fields: [serviceId], references: [id])
+  priceCents Int
+  status     ServiceRequestStatus @default(IN_PROGRESS)
+  updatedAt  DateTime             @updatedAt @default(now())
+}
+
+model Payment {
+  id          String         @id @default(cuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id])
+  purpose     PaymentPurpose
+  amountCents Int
+  status      PaymentStatus  @default(PENDING)
+  stripeSessionId String?    @unique
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  serviceRequest ServiceRequest?
+}
+
+model RequestMessage {
+  id        String         @id @default(cuid())
+  requestId String
+  request   ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User           @relation(fields: [authorId], references: [id])
+  body      String?        @db.Text
+  fileName  String?
+  filePath  String?
+  createdAt DateTime       @default(now())
+}
+
+model AppSettings {
+  id              String @id @default("default")
+  poaFeeCents     Int    @default(50000)
+  poaInstructions String @db.Text @default("After payment, our team will provide embassy and legal office guidance. Contact support if you have questions.")
+}
