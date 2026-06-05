@@ -24,6 +24,7 @@ export function LoginForm({ title = "Sign in" }: { title?: string }) {
     const res = await signIn("credentials", {
       email: form.get("email"),
       password: form.get("password"),
+      website: form.get("website"),
       redirect: false,
     });
     if (res?.error) {
@@ -40,7 +41,15 @@ export function LoginForm({ title = "Sign in" }: { title?: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={onSubmit} className="relative space-y-5">
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        className="pointer-events-none absolute h-0 w-0 opacity-0"
+        aria-hidden
+      />
       <div>
         <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
         <p className="mt-1 text-sm text-slate-600">

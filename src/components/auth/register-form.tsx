@@ -44,6 +44,14 @@ export function RegisterForm() {
         className="pointer-events-none absolute h-0 w-0 opacity-0"
         aria-hidden
       />
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        className="pointer-events-none absolute h-0 w-0 opacity-0"
+        aria-hidden
+      />
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
           Create your account

@@ -6,6 +6,7 @@ import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getOrCreatePoaCase } from "@/lib/poa";
 import { requireActionAdmin } from "@/lib/action-auth";
+import { isHoneypotTripped } from "@/lib/honeypot";
 import { z } from "zod";
 
 const registerSchema = z.object({
@@ -16,6 +17,10 @@ const registerSchema = z.object({
 });
 
 export async function registerClient(formData: FormData) {
+  if (isHoneypotTripped(formData.get("website"))) {
+    return { error: "Registration failed. Please try again." };
+  }
+
   const parsed = registerSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),

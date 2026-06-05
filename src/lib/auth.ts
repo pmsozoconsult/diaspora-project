@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/lib/auth.config";
+import { isHoneypotTripped } from "@/lib/honeypot";
 
 declare module "next-auth" {
   interface Session {
@@ -35,8 +36,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        website: { label: "Website", type: "text" },
       },
       async authorize(credentials) {
+        if (isHoneypotTripped(credentials?.website)) return null;
         if (!credentials?.email || !credentials?.password) return null;
 
         const email = String(credentials.email).toLowerCase().trim();

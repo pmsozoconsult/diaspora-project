@@ -1,31 +1,51 @@
-# Security audit checklist (post full-VPS migration)
+# Security audit checklist
 
-Last verified: 2026-06-05
+Last verified: 2026-06-05 (Phases 0–6)
 
 | # | Issue | Status | Verify |
 |---|-------|--------|--------|
-| A1 | Postgres public on 5433 | ✅ | `ss -tlnp \| grep 5433` empty; only `127.0.0.1:5432` |
-| A2 | Weak DB password | ✅ | Rotated; see `deploy/CREDENTIALS.local.txt` |
-| A3 | Vercel → remote DB | ⚠️ | Disable Vercel project manually in dashboard |
-| A4 | No firewall | ✅ | `ufw status` active (22, 80, 443) |
-| A5 | Server actions trust client IDs | ✅ | Actions use `requireAction*()` session |
-| A6 | POA chat role spoofing | ✅ | Role read from session only |
-| A7 | Default admin password | ✅ | Rotated from `ChangeMe123!` |
-| A8 | Weak AUTH_SECRET | ✅ | New secret in `.env.production` |
-| A9 | AUTH_URL mismatch | ⚠️ | Set to `https://diaspora.sozoconsult.com` — needs DNS + TLS |
-| A10 | Dev mode as production | ✅ | `diaspora-prod` runs `next start` on 3001 |
-| A11 | No HTTPS | ❌ | DNS points to wrong IP; certbot broken on host |
-| A12 | Login rate limiting | ✅ | nginx `limit_req` on /login, /register, /api/auth |
-| A13 | Mock payments | 🔵 | Accepted until Stripe |
-| A14 | Chat upload validation | ✅ | PDF/images only, 10 MB max |
-| A15 | DB backups | ✅ | Daily cron `deploy/backup-diaspora.sh` |
-| A16 | Security headers | ✅ | Next.js + nginx headers |
+| A1 | Postgres public on 5433 | ✅ | Only `127.0.0.1:5432` |
+| A2 | Weak DB password | ✅ | Rotated — `deploy/CREDENTIALS.local.txt` |
+| A3 | Vercel → remote DB | ✅ | Deployment removed by user |
+| A4 | No firewall | ✅ | UFW: 22, 80, 443 |
+| A5 | Server actions trust client IDs | ✅ | Session via `requireAction*()` |
+| A6 | POA chat role spoofing | ✅ | Role from session |
+| A7 | Default admin password | ✅ | Rotated |
+| A8 | Weak AUTH_SECRET | ✅ | `.env.production` |
+| A9 | AUTH_URL mismatch | ✅ | `https://diaspora.sozoconsult.com` |
+| A10 | Dev mode as production | ✅ | `diaspora-prod` → `next start` :3001 |
+| A11 | No HTTPS | ✅ | Let's Encrypt cert to 2026-09-03 |
+| A12 | Login rate limiting | ✅ | nginx `limit_req` + fail2ban |
+| A13 | Mock payments | 🔵 | Until Stripe configured |
+| A14 | Chat upload validation | ✅ | Type + 10 MB |
+| A15 | DB backups | ✅ | Daily cron 03:00 |
+| A16 | Security headers | ✅ | nginx + Next.js |
+| A17 | SSH password brute force | ✅ | Key-only SSH + fail2ban sshd |
+| A18 | Bot registration/login | ✅ | Honeypot fields |
+| A19 | Certbot renewal | ✅ | systemd uses `/usr/local/bin/certbot` |
+| A20 | Shared VPS blast radius | ⚠️ | Odoo/Weblate still on same host |
 
-## Remaining manual steps
+## Production URL
 
-1. **DNS:** Point `diaspora.sozoconsult.com` A record to `178.104.185.90` (currently `46.30.215.185`).
-2. **HTTPS:** After DNS propagates, fix certbot on the host and run:
-   `sudo certbot --nginx -d diaspora.sozoconsult.com`
-3. **Vercel:** Pause or delete the `diaspora-project` Vercel deployment.
+https://diaspora.sozoconsult.com
+
+## DNS
+
+Resolvers (Google/Cloudflare): `178.104.185.90` ✅  
+If you still see the old site, flush local DNS cache — propagation can take up to 24h.
+
+## Phase 6 applied on server
+
+- `fail2ban` — sshd + nginx rate-limit jails
+- SSH — password auth disabled (key only)
+- Certbot — pip 5.6.0, auto-renew fixed
+- Honeypot — login + register forms
+
+## Not implemented (optional later)
+
+- **MFA** for staff/admin
+- **Cloudflare** WAF/DDoS (add in DNS if desired)
+- **Stripe** real payments
+- **Dedicated VPS** for diaspora isolation
 
 Legend: ✅ Fixed · ⚠️ Partial · ❌ Open · 🔵 Accepted risk
