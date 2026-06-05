@@ -76,7 +76,7 @@ export default async function PortalPoaPage() {
                     </p>
                   </div>
                 </div>
-                <PoaPayButton userId={session.user.id} feeCents={feeCents} />
+                <PoaPayButton feeCents={feeCents} />
               </div>
             </Card>
           )}
@@ -87,7 +87,7 @@ export default async function PortalPoaPage() {
               <CardDescription className="mb-6">
                 Current status: {POA_STATUS_LABELS[poa.status]}
               </CardDescription>
-              <PoaInstructions status={poa.status} userId={session.user.id} />
+              <PoaInstructions status={poa.status} />
             </Card>
           )}
 
@@ -95,7 +95,6 @@ export default async function PortalPoaPage() {
             <div id="poa-chat">
               <PoaChat
                 poaCaseId={poa.id}
-                userId={session.user.id}
                 userRole={session.user.role}
                 initialMessages={messages}
                 closed={chatClosed}

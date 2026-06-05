@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getOrCreatePoaCase } from "@/lib/poa";
+import { requireActionAdmin } from "@/lib/action-auth";
 import { z } from "zod";
 
 const registerSchema = z.object({
@@ -54,14 +55,12 @@ const staffSchema = z.object({
   role: z.enum(["STAFF", "ADMIN"]),
 });
 
-export async function createStaffUser(
-  adminId: string,
-  formData: FormData
-) {
-  const admin = await prisma.user.findUnique({ where: { id: adminId } });
-  if (!admin || admin.role !== Role.ADMIN) {
+export async function createStaffUser(formData: FormData) {
+  const authResult = await requireActionAdmin();
+  if (!authResult.session) {
     return { error: "Only administrators can create staff accounts." };
   }
+  const adminId = authResult.session.user.id;
 
   const parsed = staffSchema.safeParse({
     name: formData.get("name"),
@@ -103,12 +102,11 @@ const updateInternalUserSchema = z.object({
 });
 
 export async function updateInternalUser(
-  adminId: string,
   userId: string,
   formData: FormData
 ) {
-  const admin = await prisma.user.findUnique({ where: { id: adminId } });
-  if (!admin || admin.role !== Role.ADMIN) {
+  const authResult = await requireActionAdmin();
+  if (!authResult.session) {
     return { error: "Only administrators can edit internal users." };
   }
 

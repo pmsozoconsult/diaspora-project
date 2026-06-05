@@ -18,14 +18,12 @@ import { PoaScanUpload } from "@/components/staff/poa-scan-upload";
 
 export function PoaStaffActions({
   poaCaseId,
-  staffId,
   status,
   scanUrl,
   scanFileName,
   scanUploadedAt,
 }: {
   poaCaseId: string;
-  staffId: string;
   status: PoaStatus;
   scanUrl: string | null;
   scanFileName: string | null;
@@ -38,7 +36,7 @@ export function PoaStaffActions({
   async function setStatus(newStatus: PoaStatus) {
     setLoading(true);
     setError(null);
-    const result = await updatePoaStatus(staffId, poaCaseId, newStatus);
+    const result = await updatePoaStatus(poaCaseId, newStatus);
     setLoading(false);
     if (result.error) {
       setError(result.error);
@@ -50,7 +48,7 @@ export function PoaStaffActions({
   async function markMofaSubmitted() {
     setLoading(true);
     setError(null);
-    const result = await confirmMofaSubmissionByStaff(staffId, poaCaseId);
+    const result = await confirmMofaSubmissionByStaff(poaCaseId);
     setLoading(false);
     if (result.error) {
       setError(result.error);
@@ -67,7 +65,6 @@ export function PoaStaffActions({
 
       <PoaScanUpload
         poaCaseId={poaCaseId}
-        staffId={staffId}
         status={status}
         scanUrl={scanUrl}
         scanFileName={scanFileName}

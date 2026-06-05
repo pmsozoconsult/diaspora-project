@@ -79,7 +79,6 @@ export default async function StaffPoaDetailPage({
         <div className="space-y-6 lg:col-span-2">
           <PoaChat
             poaCaseId={poa.id}
-            userId={session.user.id}
             userRole={session.user.role}
             initialMessages={messages}
             closed={chatClosed}
@@ -89,7 +88,6 @@ export default async function StaffPoaDetailPage({
             <CardTitle>Staff actions</CardTitle>
             <div className="mt-4">
               <PoaStaffActions
-                staffId={session.user.id}
                 poaCaseId={poa.id}
                 status={poa.status}
                 scanUrl={scanUrl}

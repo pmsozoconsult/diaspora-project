@@ -55,7 +55,6 @@ export default async function PortalRequestDetailPage({
           status: i.status ?? ServiceRequestStatus.IN_PROGRESS,
         }))}
         messages={messages}
-        userId={session.user.id}
         userRole={session.user.role}
         isStaff={false}
       />

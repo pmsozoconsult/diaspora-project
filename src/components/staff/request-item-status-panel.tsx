@@ -15,12 +15,10 @@ import { cn } from "@/lib/utils";
 import { CheckCircle2 } from "lucide-react";
 
 export function RequestItemStatusPanel({
-  staffId,
   itemId,
   serviceName,
   currentStatus,
 }: {
-  staffId: string;
   itemId: string;
   serviceName: string;
   currentStatus: ServiceRequestStatus;
@@ -41,7 +39,7 @@ export function RequestItemStatusPanel({
     if (!pending) return;
     setLoading(true);
     setError(null);
-    const result = await updateRequestItemStatus(staffId, itemId, pending);
+    const result = await updateRequestItemStatus(itemId, pending);
     setLoading(false);
     if (result.error) {
       setError(result.error);

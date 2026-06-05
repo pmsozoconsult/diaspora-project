@@ -4,8 +4,14 @@ import { PoaStatus, Role } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { saveUpload } from "@/lib/storage";
+import { requireActionAuth } from "@/lib/action-auth";
+import { validateChatUpload } from "@/lib/upload-validation";
 
-async function canAccessPoaChat(userId: string, role: Role, poaCaseId: string) {
+async function canAccessPoaChat(
+  userId: string,
+  role: Role,
+  poaCaseId: string
+) {
   const poa = await prisma.poaCase.findUnique({
     where: { id: poaCaseId },
     include: { user: true },
@@ -27,12 +33,12 @@ async function canAccessPoaChat(userId: string, role: Role, poaCaseId: string) {
   return { poa, error: null };
 }
 
-export async function postPoaMessage(
-  authorId: string,
-  role: Role,
-  poaCaseId: string,
-  formData: FormData
-) {
+export async function postPoaMessage(poaCaseId: string, formData: FormData) {
+  const authResult = await requireActionAuth();
+  if (!authResult.session) return { error: authResult.error ?? "Unauthorized" };
+  const authorId = authResult.session.user.id;
+  const role = authResult.session.user.role;
+
   const body = String(formData.get("body") ?? "").trim();
   const file = formData.get("file") as File | null;
   const hasFile = file && file.size > 0;
@@ -48,6 +54,8 @@ export async function postPoaMessage(
   let filePath: string | undefined;
 
   if (hasFile && file) {
+    const uploadError = validateChatUpload(file);
+    if (uploadError) return { error: uploadError };
     const buffer = Buffer.from(await file.arrayBuffer());
     filePath = await saveUpload("poa-chat", file.name, buffer);
     fileName = file.name;

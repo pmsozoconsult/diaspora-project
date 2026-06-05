@@ -9,13 +9,7 @@ import {
   type InternalUserRow,
 } from "@/components/staff/edit-internal-user-dialog";
 
-export function InternalUsersTable({
-  adminId,
-  users,
-}: {
-  adminId: string;
-  users: InternalUserRow[];
-}) {
+export function InternalUsersTable({ users }: { users: InternalUserRow[] }) {
   const [editing, setEditing] = useState<InternalUserRow | null>(null);
 
   return (
@@ -46,7 +40,6 @@ export function InternalUsersTable({
 
       {editing && (
         <EditInternalUserDialog
-          adminId={adminId}
           user={editing}
           onClose={() => setEditing(null)}
         />

@@ -20,13 +20,11 @@ type PoaMessageView = {
 
 export function PoaChat({
   poaCaseId,
-  userId,
   userRole,
   initialMessages,
   closed,
 }: {
   poaCaseId: string;
-  userId: string;
   userRole: Role;
   initialMessages: PoaMessageView[];
   closed?: boolean;
@@ -46,7 +44,7 @@ export function PoaChat({
     const fd = new FormData();
     if (body.trim()) fd.set("body", body.trim());
     if (file) fd.set("file", file);
-    const result = await postPoaMessage(userId, userRole, poaCaseId, fd);
+    const result = await postPoaMessage(poaCaseId, fd);
     setLoading(false);
     if (result.error) {
       setError(result.error);

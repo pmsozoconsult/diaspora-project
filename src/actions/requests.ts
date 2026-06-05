@@ -16,11 +16,19 @@ import {
   deriveRequestStatusFromItems,
   REQUEST_STATUS_LABELS,
 } from "@/lib/requests";
+import {
+  requireActionAdmin,
+  requireActionAuth,
+  requireActionClient,
+  requireActionStaff,
+} from "@/lib/action-auth";
+import { validateChatUpload } from "@/lib/upload-validation";
 
-export async function createServiceRequestDraft(
-  userId: string,
-  serviceIds: string[]
-) {
+export async function createServiceRequestDraft(serviceIds: string[]) {
+  const authResult = await requireActionClient();
+  if (!authResult.session) return { error: authResult.error ?? "Unauthorized" };
+  const userId = authResult.session.user.id;
+
   const canRequest = await clientCanRequestServices(userId);
   if (!canRequest) {
     return { error: "Complete power of attorney before requesting services." };
@@ -93,14 +101,12 @@ export async function createServiceRequestDraft(
 }
 
 export async function updateRequestItemStatus(
-  staffId: string,
   itemId: string,
   status: ServiceRequestStatus
 ) {
-  const staff = await prisma.user.findUnique({ where: { id: staffId } });
-  if (!staff || (staff.role !== Role.STAFF && staff.role !== Role.ADMIN)) {
-    return { error: "Unauthorized" };
-  }
+  const authResult = await requireActionStaff();
+  if (!authResult.session) return { error: authResult.error ?? "Unauthorized" };
+  const staffId = authResult.session.user.id;
 
   const item = await prisma.serviceRequestItem.findUnique({
     where: { id: itemId },
@@ -164,12 +170,11 @@ async function assertStaffUser(userId: string) {
 }
 
 export async function assignRequestToStaff(
-  adminId: string,
   requestId: string,
   staffUserId: string
 ) {
-  const admin = await prisma.user.findUnique({ where: { id: adminId } });
-  if (!admin || admin.role !== Role.ADMIN) {
+  const authResult = await requireActionAdmin();
+  if (!authResult.session) {
     return { error: "Only administrators can assign requests." };
   }
 
@@ -199,7 +204,10 @@ export async function assignRequestToStaff(
   };
 }
 
-export async function pickUpRequest(staffId: string, requestId: string) {
+export async function pickUpRequest(requestId: string) {
+  const authResult = await requireActionStaff();
+  if (!authResult.session) return { error: authResult.error ?? "Unauthorized" };
+  const staffId = authResult.session.user.id;
   const staff = await assertStaffUser(staffId);
   if (!staff) return { error: "Unauthorized" };
 
@@ -237,9 +245,10 @@ export async function pickUpRequest(staffId: string, requestId: string) {
   };
 }
 
-export async function dropRequestTask(staffId: string, requestId: string) {
-  const staff = await assertStaffUser(staffId);
-  if (!staff) return { error: "Unauthorized" };
+export async function dropRequestTask(requestId: string) {
+  const authResult = await requireActionStaff();
+  if (!authResult.session) return { error: authResult.error ?? "Unauthorized" };
+  const staffId = authResult.session.user.id;
 
   const request = await prisma.serviceRequest.findUnique({
     where: { id: requestId },
@@ -264,10 +273,14 @@ export async function dropRequestTask(staffId: string, requestId: string) {
 }
 
 export async function postRequestMessage(
-  authorId: string,
   requestId: string,
   formData: FormData
 ) {
+  const authResult = await requireActionAuth();
+  if (!authResult.session) return { error: authResult.error ?? "Unauthorized" };
+  const authorId = authResult.session.user.id;
+  const role = authResult.session.user.role;
+
   const body = String(formData.get("body") ?? "").trim();
   const file = formData.get("file") as File | null;
   const hasFile = file && file.size > 0;
@@ -289,14 +302,11 @@ export async function postRequestMessage(
     return { error: "This request is closed." };
   }
 
-  const author = await prisma.user.findUnique({ where: { id: authorId } });
-  if (!author) return { error: "Unauthorized" };
-
-  const isClient = author.role === Role.CLIENT;
+  const isClient = role === Role.CLIENT;
   if (isClient && request.clientId !== authorId) {
     return { error: "Unauthorized" };
   }
-  if (!isClient && author.role !== Role.STAFF && author.role !== Role.ADMIN) {
+  if (!isClient && role !== Role.STAFF && role !== Role.ADMIN) {
     return { error: "Unauthorized" };
   }
 
@@ -304,6 +314,8 @@ export async function postRequestMessage(
   let filePath: string | undefined;
 
   if (hasFile && file) {
+    const uploadError = validateChatUpload(file);
+    if (uploadError) return { error: uploadError };
     const buffer = Buffer.from(await file.arrayBuffer());
     filePath = await saveUpload("request-chat", file.name, buffer);
     fileName = file.name;

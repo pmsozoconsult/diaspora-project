@@ -41,7 +41,7 @@ export default async function NewRequestPage() {
           </p>
         </header>
 
-        <NewRequestForm userId={session.user.id} services={services} />
+        <NewRequestForm services={services} />
       </section>
     </div>
   );

@@ -24,14 +24,12 @@ function formatBytes(bytes: number) {
 
 export function PoaScanUpload({
   poaCaseId,
-  staffId,
   status,
   scanUrl,
   scanFileName,
   scanUploadedAt,
 }: {
   poaCaseId: string;
-  staffId: string;
   status: PoaStatus;
   scanUrl: string | null;
   scanFileName: string | null;
@@ -74,7 +72,7 @@ export function PoaScanUpload({
 
     const formData = new FormData();
     formData.set("file", file);
-    const result = await uploadPoaScan(staffId, poaCaseId, formData);
+    const result = await uploadPoaScan(poaCaseId, formData);
 
     window.clearInterval(tick);
     setProgress(100);
@@ -103,7 +101,7 @@ export function PoaScanUpload({
     if (!confirm("Remove the uploaded scan from this case?")) return;
     setDeleting(true);
     setError(null);
-    const result = await deletePoaScan(staffId, poaCaseId);
+    const result = await deletePoaScan(poaCaseId);
     setDeleting(false);
     if (result.error) {
       setError(result.error);

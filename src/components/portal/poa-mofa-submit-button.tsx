@@ -6,7 +6,7 @@ import { confirmMofaSubmission } from "@/actions/poa";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Send } from "lucide-react";
 
-export function PoaMofaSubmitButton({ userId }: { userId: string }) {
+export function PoaMofaSubmitButton() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +14,7 @@ export function PoaMofaSubmitButton({ userId }: { userId: string }) {
   async function onClick() {
     setLoading(true);
     setError(null);
-    const result = await confirmMofaSubmission(userId);
+    const result = await confirmMofaSubmission();
     setLoading(false);
     if (result.error) {
       setError(result.error);

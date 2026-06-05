@@ -19,13 +19,11 @@ type Message = {
 
 export function RequestChat({
   requestId,
-  userId,
   userRole,
   initialMessages,
   closed,
 }: {
   requestId: string;
-  userId: string;
   userRole: Role;
   initialMessages: Message[];
   closed?: boolean;
@@ -59,7 +57,7 @@ export function RequestChat({
     const fd = new FormData();
     if (body.trim()) fd.set("body", body.trim());
     if (file) fd.set("file", file);
-    const result = await postRequestMessage(userId, requestId, fd);
+    const result = await postRequestMessage(requestId, fd);
     setLoading(false);
     if (result.error) {
       setError(result.error);

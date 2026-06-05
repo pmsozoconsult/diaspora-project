@@ -66,7 +66,6 @@ export default async function StaffRequestDetailPage({
           status: i.status ?? ServiceRequestStatus.IN_PROGRESS,
         }))}
         messages={messages}
-        userId={session.user.id}
         userRole={session.user.role}
         isStaff
         staffId={session.user.id}

@@ -12,13 +12,7 @@ import { Button } from "@/components/ui/button";
 import { formatMoney, cn } from "@/lib/utils";
 import { FileText, Scale, X } from "lucide-react";
 
-export function PoaPayButton({
-  userId,
-  feeCents,
-}: {
-  userId: string;
-  feeCents: number;
-}) {
+export function PoaPayButton({ feeCents }: { feeCents: number }) {
   const [open, setOpen] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -35,7 +29,7 @@ export function PoaPayButton({
     if (!accepted) return;
     setLoading(true);
     setError(null);
-    const result = await initiatePoaPayment(userId, true);
+    const result = await initiatePoaPayment(true);
     setLoading(false);
     if (result.error) {
       setError(result.error);

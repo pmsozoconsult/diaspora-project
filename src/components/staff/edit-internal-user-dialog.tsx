@@ -19,11 +19,9 @@ export type InternalUserRow = {
 };
 
 export function EditInternalUserDialog({
-  adminId,
   user,
   onClose,
 }: {
-  adminId: string;
   user: InternalUserRow;
   onClose: () => void;
 }) {
@@ -36,7 +34,6 @@ export function EditInternalUserDialog({
     setLoading(true);
     setError(null);
     const result = await updateInternalUser(
-      adminId,
       user.id,
       new FormData(e.currentTarget)
     );

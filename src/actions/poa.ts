@@ -1,7 +1,7 @@
 "use server";
 
 import path from "path";
-import { PoaStatus, Role } from "@prisma/client";
+import { PoaStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { deleteStoredFile, saveUpload } from "@/lib/storage";
@@ -13,8 +13,17 @@ import {
 import { getPoaFeeCents } from "@/lib/poa";
 import { POA_TERMS_VERSION } from "@/lib/poa-terms";
 import { canStaffSetPoaStatus } from "@/lib/requests";
+import {
+  requireActionAdmin,
+  requireActionClient,
+  requireActionStaff,
+} from "@/lib/action-auth";
 
-export async function initiatePoaPayment(userId: string, termsAccepted: boolean) {
+export async function initiatePoaPayment(termsAccepted: boolean) {
+  const authResult = await requireActionClient();
+  if (!authResult.session) return { error: authResult.error ?? "Unauthorized" };
+  const userId = authResult.session.user.id;
+
   if (!termsAccepted) {
     return { error: "You must accept the terms and conditions to proceed." };
   }
@@ -45,15 +54,12 @@ export async function initiatePoaPayment(userId: string, termsAccepted: boolean)
 }
 
 export async function updatePoaStatus(
-  staffId: string,
   poaCaseId: string,
   status: PoaStatus,
   notes?: string
 ) {
-  const staff = await prisma.user.findUnique({ where: { id: staffId } });
-  if (!staff || (staff.role !== Role.STAFF && staff.role !== Role.ADMIN)) {
-    return { error: "Unauthorized" };
-  }
+  const authResult = await requireActionStaff();
+  if (!authResult.session) return { error: authResult.error ?? "Unauthorized" };
 
   const poa = await prisma.poaCase.findUnique({ where: { id: poaCaseId } });
   if (!poa) return { error: "POA case not found" };
@@ -79,11 +85,9 @@ export async function updatePoaStatus(
   return { success: true };
 }
 
-export async function confirmMofaSubmissionByStaff(staffId: string, poaCaseId: string) {
-  const staff = await prisma.user.findUnique({ where: { id: staffId } });
-  if (!staff || (staff.role !== Role.STAFF && staff.role !== Role.ADMIN)) {
-    return { error: "Unauthorized" };
-  }
+export async function confirmMofaSubmissionByStaff(poaCaseId: string) {
+  const authResult = await requireActionStaff();
+  if (!authResult.session) return { error: authResult.error ?? "Unauthorized" };
 
   const poa = await prisma.poaCase.findUnique({ where: { id: poaCaseId } });
   if (!poa) return { error: "POA case not found." };
@@ -102,7 +106,11 @@ export async function confirmMofaSubmissionByStaff(staffId: string, poaCaseId: s
   return { success: true };
 }
 
-export async function confirmMofaSubmission(userId: string) {
+export async function confirmMofaSubmission() {
+  const authResult = await requireActionClient();
+  if (!authResult.session) return { error: authResult.error ?? "Unauthorized" };
+  const userId = authResult.session.user.id;
+
   const poa = await prisma.poaCase.findUnique({ where: { userId } });
   if (!poa) return { error: "POA case not found." };
   if (poa.status !== PoaStatus.POA_FEE_PAID) {
@@ -119,15 +127,9 @@ export async function confirmMofaSubmission(userId: string) {
   return { success: true };
 }
 
-export async function uploadPoaScan(
-  staffId: string,
-  poaCaseId: string,
-  formData: FormData
-) {
-  const staff = await prisma.user.findUnique({ where: { id: staffId } });
-  if (!staff || (staff.role !== Role.STAFF && staff.role !== Role.ADMIN)) {
-    return { error: "Unauthorized" };
-  }
+export async function uploadPoaScan(poaCaseId: string, formData: FormData) {
+  const authResult = await requireActionStaff();
+  if (!authResult.session) return { error: authResult.error ?? "Unauthorized" };
 
   const poa = await prisma.poaCase.findUnique({ where: { id: poaCaseId } });
   if (!poa) return { error: "POA case not found" };
@@ -168,11 +170,9 @@ export async function uploadPoaScan(
   return { success: true, fileName: file.name };
 }
 
-export async function deletePoaScan(staffId: string, poaCaseId: string) {
-  const staff = await prisma.user.findUnique({ where: { id: staffId } });
-  if (!staff || (staff.role !== Role.STAFF && staff.role !== Role.ADMIN)) {
-    return { error: "Unauthorized" };
-  }
+export async function deletePoaScan(poaCaseId: string) {
+  const authResult = await requireActionStaff();
+  if (!authResult.session) return { error: authResult.error ?? "Unauthorized" };
 
   const poa = await prisma.poaCase.findUnique({ where: { id: poaCaseId } });
   if (!poa) return { error: "POA case not found" };
@@ -196,14 +196,9 @@ export async function deletePoaScan(staffId: string, poaCaseId: string) {
   return { success: true };
 }
 
-export async function updatePoaInstructions(
-  adminId: string,
-  instructions: string
-) {
-  const admin = await prisma.user.findUnique({ where: { id: adminId } });
-  if (!admin || admin.role !== Role.ADMIN) {
-    return { error: "Unauthorized" };
-  }
+export async function updatePoaInstructions(instructions: string) {
+  const authResult = await requireActionAdmin();
+  if (!authResult.session) return { error: authResult.error ?? "Unauthorized" };
 
   await prisma.appSettings.update({
     where: { id: "default" },

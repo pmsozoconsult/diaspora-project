@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function CreateStaffForm({ adminId }: { adminId: string }) {
+export function CreateStaffForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -21,7 +21,7 @@ export function CreateStaffForm({ adminId }: { adminId: string }) {
     setError(null);
     setSuccess(false);
     const formData = new FormData(form);
-    const result = await createStaffUser(adminId, formData);
+    const result = await createStaffUser(formData);
     setLoading(false);
     if (result.error) {
       setError(result.error);

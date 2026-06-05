@@ -1,0 +1,17 @@
+[Unit]
+Description=Sozo Diaspora production (127.0.0.1:3001)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/docker/diaspora-project
+EnvironmentFile=/root/docker/diaspora-project/.env.production
+Environment=NODE_ENV=production
+ExecStartPre=/usr/bin/docker compose -f /root/docker/diaspora-project/docker-compose.yml --env-file /root/docker/diaspora-project/.env.production up -d
+ExecStart=/usr/bin/npm run start:prod
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

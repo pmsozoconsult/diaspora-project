@@ -21,13 +21,7 @@ type Service = {
   priceCents: number;
 };
 
-export function NewRequestForm({
-  userId,
-  services,
-}: {
-  userId: string;
-  services: Service[];
-}) {
+export function NewRequestForm({ services }: { services: Service[] }) {
   const [selected, setSelected] = useState<string[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     () => new Set()
@@ -64,7 +58,7 @@ export function NewRequestForm({
   async function submit() {
     setLoading(true);
     setError(null);
-    const result = await createServiceRequestDraft(userId, selected);
+    const result = await createServiceRequestDraft(selected);
     setLoading(false);
     if (result.error) {
       setError(result.error);

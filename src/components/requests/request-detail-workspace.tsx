@@ -66,7 +66,6 @@ export function RequestDetailWorkspace({
   requestStatus,
   items,
   messages,
-  userId,
   userRole,
   isStaff,
   staffId,
@@ -80,7 +79,6 @@ export function RequestDetailWorkspace({
   requestStatus: ServiceRequestStatus;
   items: RequestItemView[];
   messages: MessageView[];
-  userId: string;
   userRole: Role;
   isStaff: boolean;
   staffId?: string;
@@ -359,7 +357,6 @@ export function RequestDetailWorkspace({
                 service is marked completed.
               </p>
               <RequestItemStatusPanel
-                staffId={staffId}
                 itemId={selected.id}
                 serviceName={selected.serviceName}
                 currentStatus={
@@ -379,7 +376,6 @@ export function RequestDetailWorkspace({
           </p>
           <RequestChat
             requestId={requestId}
-            userId={userId}
             userRole={userRole}
             initialMessages={messages}
             closed={

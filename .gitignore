@@ -25,9 +25,12 @@ yarn-error.log*
 
 # env files
 .env
+.env.production
 .env*.local
 .env.example
 .env.vercel
+deploy/CREDENTIALS.local.txt
+backups/
 
 # vercel
 .vercel

@@ -9,6 +9,7 @@
     "start:tunnel": "next start -H 127.0.0.1 -p 3000",
     "build": "sh scripts/guard-no-build-during-dev.sh && prisma generate && next build",
     "start": "next start",
+    "start:prod": "next start -H 127.0.0.1 -p 3001",
     "lint": "next lint",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",

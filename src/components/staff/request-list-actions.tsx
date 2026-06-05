@@ -71,7 +71,7 @@ export function RequestListActions({
   async function handlePickUp() {
     setLoading(true);
     setError(null);
-    const result = await pickUpRequest(currentUserId, requestId);
+    const result = await pickUpRequest(requestId);
     setLoading(false);
     if (result.error) {
       setError(result.error);
@@ -88,7 +88,7 @@ export function RequestListActions({
   async function handleDrop() {
     setLoading(true);
     setError(null);
-    const result = await dropRequestTask(currentUserId, requestId);
+    const result = await dropRequestTask(requestId);
     setLoading(false);
     if (result.error) {
       setError(result.error);
@@ -109,11 +109,7 @@ export function RequestListActions({
     }
     setLoading(true);
     setError(null);
-    const result = await assignRequestToStaff(
-      currentUserId,
-      requestId,
-      selectedStaffId
-    );
+    const result = await assignRequestToStaff(requestId, selectedStaffId);
     setLoading(false);
     if (result.error) {
       setError(result.error);

@@ -40,6 +40,9 @@ export default auth((req) => {
     if (role === Roles.CLIENT) {
       return NextResponse.redirect(new URL("/portal", req.url));
     }
+    if (pathname.startsWith("/staff/team") && role !== Roles.ADMIN) {
+      return NextResponse.redirect(new URL("/staff", req.url));
+    }
   }
 
   return NextResponse.next();

@@ -8,7 +8,7 @@ import { InternalUsersTable } from "@/components/staff/internal-users-table";
 import { UserPlus } from "lucide-react";
 
 export default async function StaffTeamPage() {
-  const session = await requireAdmin();
+  await requireAdmin();
 
   const team = await prisma.user.findMany({
     where: { role: { in: [Role.STAFF, Role.ADMIN] } },
@@ -32,7 +32,7 @@ export default async function StaffTeamPage() {
           <CardDescription className="mb-6">
             New users can sign in at /login immediately.
           </CardDescription>
-          <CreateStaffForm adminId={session.user.id} />
+          <CreateStaffForm />
         </Card>
 
         <Card variant="outline" className="bg-slate-50/50">
@@ -53,7 +53,6 @@ export default async function StaffTeamPage() {
       <div className="mt-10">
         <h2 className="mb-4 text-lg font-bold text-slate-900">Internal users</h2>
         <InternalUsersTable
-          adminId={session.user.id}
           users={team.map((u) => ({
             id: u.id,
             name: u.name,

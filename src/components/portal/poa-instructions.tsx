@@ -10,10 +10,8 @@ import {
 
 export function PoaInstructions({
   status,
-  userId,
 }: {
   status: PoaStatus;
-  userId: string;
 }) {
   const showMofaButton = status === PoaStatus.POA_FEE_PAID;
   const mofaDone = status !== PoaStatus.POA_FEE_PAID && status !== PoaStatus.NOT_STARTED;
@@ -51,7 +49,7 @@ export function PoaInstructions({
                   </Link>
                 )}
                 {step.highlight === "mofa-submit" && showMofaButton && (
-                  <PoaMofaSubmitButton userId={userId} />
+                  <PoaMofaSubmitButton />
                 )}
                 {step.highlight === "mofa-submit" && mofaDone && !showMofaButton && (
                   <PoaMofaSubmittedBadge />
