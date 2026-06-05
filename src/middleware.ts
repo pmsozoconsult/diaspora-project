@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
-import { Role } from "@prisma/client";
+import { Roles } from "@/lib/roles";
 import { authConfig } from "@/lib/auth.config";
 
 const { auth } = NextAuth(authConfig);
@@ -18,7 +18,7 @@ export default auth((req) => {
     pathname.startsWith("/login") || pathname.startsWith("/register");
 
   if (isAuthPage && isLoggedIn) {
-    if (role === Role.CLIENT) {
+    if (role === Roles.CLIENT) {
       return NextResponse.redirect(new URL("/portal", req.url));
     }
     return NextResponse.redirect(new URL("/staff", req.url));
@@ -28,7 +28,7 @@ export default auth((req) => {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
-    if (role !== Role.CLIENT) {
+    if (role !== Roles.CLIENT) {
       return NextResponse.redirect(new URL("/staff", req.url));
     }
   }
@@ -37,7 +37,7 @@ export default auth((req) => {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
-    if (role === Role.CLIENT) {
+    if (role === Roles.CLIENT) {
       return NextResponse.redirect(new URL("/portal", req.url));
     }
   }
